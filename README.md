@@ -1,20 +1,20 @@
-# Logo Pack Studio — Auto Generate / Customize
+# Logo Pack Studio V5
 
-Aplicação estática para GitHub Pages, Android e desktop.
+Static PWA for GitHub Pages. No build system or server required.
 
-## Publicação
-Carrega os quatro ficheiros (`index.html`, `icon.svg`, `manifest.webmanifest`, `sw.js`) para a raiz do repositório GitHub e ativa Settings > Pages > Deploy from a branch > main / root.
+## Deploy
+Upload **all five files** (`index.html`, `app.js`, `icon.svg`, `manifest.webmanifest`, `sw.js`) to the root of the `main` branch. Enable GitHub Pages in Settings > Pages > Deploy from branch > main / root.
 
-## Utilização
-1. Carrega **Original**, **Branco** e **Preto** (obrigatórios). O **Símbolo** é opcional.
-2. Em **Auto Generate**, gera tudo com as definições predefinidas. Em **Customize**, escolhe formatos e conteúdos.
-3. Descarrega o ZIP gerado no próprio dispositivo.
+## Workflow
+Brand & Assets (original/white/black required, symbol optional) > Colors > Export. Choose Auto Generate or Customize.
 
-## Formatos e limitações
-- PNG, JPG, WebP, ICO (favicon PNG-embedded), SVG (apenas quando a entrada é SVG), PDF (guia de 18 páginas).
-- Os SVG originais são preservados. Imagens bitmap não são vetorizadas.
-- JPG não suporta transparência. PNG/WebP mantêm transparência quando presente na origem.
-- PDF é um manual de identidade visual; não é automaticamente um ficheiro de arte-final CMYK.
-- Não exporta EPS nem CMYK certificado.
-- JSZip e jsPDF são carregados por CDN e requerem internet na primeira utilização.
-- Os ficheiros são processados no browser, sem upload para servidor.
+## Exports
+PNG/JPG/WebP multiple sizes, original SVG when provided, favicon.ico, icons, social templates, three illustrated applications, palette JSON and an 18-page landscape PDF guideline. ZIP with JSZip and PDF with jsPDF loaded from cdnjs. An internet connection is needed to load these libraries; the app itself is installable as PWA.
+
+## Limitations
+- No vectorization of raster inputs; no EPS or color-managed CMYK.
+- JPG is exported with white background; transparency is maintained only if source supports it.
+- The guidelines contain recommended rules requiring professional review, not verified specifications.
+- Social assets are branded logo placements, not a full social design system.
+- Mockups are illustrations, not photorealistic renders.
+- SVGs should be trusted files: do not upload untrusted SVG content.
