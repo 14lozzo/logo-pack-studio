@@ -1,21 +1,22 @@
-# Logo Pack Studio V7
+# Logo Pack Studio V8 — White-label A4
 
-Aplicacao estatica para GitHub Pages, Android e PC. Publicar **todos** os ficheiros na raiz do repositorio (incluindo app.js, jszip.min.js e pdf-local.js). Sem build ou backend.
+## Instalação
+Publica todos os ficheiros desta pasta na raiz do repositório GitHub Pages (não a pasta inteira). Mantém `app.js`, `pdf-local.js` e `jszip.min.js` ao lado de `index.html`.
 
-## Funcionalidades
-- Upload de um logotipo principal e simbolo opcional
-- Deteccao sugerida de cor (confirmar manualmente)
-- Nove paginas editoriais inspiradas nas secoes do PDF de referencia
-- Fotografias opcionais e composicoes planas com logotipo
-- Pre-visualizacao dentro da app e PDF rasterizado local
-- ZIP local com logotipos, favicons, redes sociais, fotografias e PDF
-- Auto Generate e Customize
+## Alterações
+- Manual A4 vertical com 20 páginas baseado na organização do modelo white-label fornecido pelo utilizador.
+- Pré-visualização das 20 páginas dentro da própria aplicação.
+- Gerador PDF local e autónomo (`pdf-local.js`) que converte as páginas para PDF A4 vertical.
+- ZIP criado por JSZip incluído localmente.
+- Auto Generate / Customize, cor sugerida, upload de logótipo, símbolo e fotografias.
+- Cache antiga do Service Worker removida no carregamento.
 
-## Limites
-- Usar SVG ou PNG transparente para gerar preto/branco com fidelidade
-- Sem vetorizacao automatica, sem CMYK certificado, sem mockups fotograficos realistas
-- PDF rasterizado, ficheiros de marca a rever antes de entregar
-- Projeto estatico: nao armazena os uploads num servidor
+## Limitações
+- PDF é rasterizado (páginas em imagem JPEG), não um ficheiro vetorial editável.
+- Textos estratégicos, medidas mínimas, tipografia, cores CMYK e aprovações requerem validação humana.
+- SVG só é incluído quando o ficheiro original é SVG.
+- Para recoloração monocromática, usar logótipo com fundo transparente.
+- As aplicações são composições planas, não mockups fotográficos realistas.
 
-## Teste
-Carregar SVG/PNG transparente, escolher cores, opcionalmente fotografias, avancar para Export, descarregar PDF e ZIP. Se houver erro, a interface mostra a mensagem. Para Android, adicionar ao ecra inicial no Chrome.
+## Testes
+Foi verificada a sintaxe JS (`node --check`) e o pacote ZIP. O browser Chromium do ambiente de execução bloqueou navegação local e localhost, pelo que a exportação ainda requer teste no dispositivo.
