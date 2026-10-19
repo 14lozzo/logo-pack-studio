@@ -1,22 +1,5 @@
-# Logo Pack Studio V5
+# Logo Pack Studio V6 — automatic monochrome variants
 
-Static PWA for GitHub Pages. No build system or server required.
+Upload only one required original logo (SVG or transparent PNG recommended). The app automatically generates a black transparent logo for white backgrounds and a white transparent logo for black backgrounds. Optional isolated symbol, and optional extra-color variant with configurable logo ink and background. ZIP/PDF libraries are bundled locally. No server needed; deploy all files from this folder at the GitHub Pages root.
 
-## Deploy
-Upload **all five files** (`index.html`, `app.js`, `icon.svg`, `manifest.webmanifest`, `sw.js`) to the root of the `main` branch. Enable GitHub Pages in Settings > Pages > Deploy from branch > main / root.
-
-## Workflow
-Brand & Assets (original/white/black required, symbol optional) > Colors > Export. Choose Auto Generate or Customize.
-
-## Exports
-PNG/JPG/WebP multiple sizes, original SVG when provided, favicon.ico, icons, social templates, three illustrated applications, palette JSON and an 18-page landscape PDF guideline. ZIP with JSZip and PDF with jsPDF loaded from cdnjs. An internet connection is needed to load these libraries; the app itself is installable as PWA.
-
-## Limitations
-- No vectorization of raster inputs; no EPS or color-managed CMYK.
-- JPG is exported with white background; transparency is maintained only if source supports it.
-- The guidelines contain recommended rules requiring professional review, not verified specifications.
-- Social assets are branded logo placements, not a full social design system.
-- Mockups are illustrations, not photorealistic renders.
-- SVGs should be trusted files: do not upload untrusted SVG content.
-
-PDF and ZIP libraries are now local. The PDF is 18-page raster-based (not print-ready vector PDF).
+Opaque images: approximate flood-fill background removal is attempted; inspect previews. Generated monochrome assets are raster files, not original vector SVGs. Original uploaded SVG remains vector. PDFs are rasterized locally. ZIP JPG versions have white/black/custom backgrounds as appropriate. PNG and WebP logo versions are transparent.
