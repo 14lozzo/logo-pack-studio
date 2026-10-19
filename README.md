@@ -1,22 +1,7 @@
-# Logo Pack Studio V8 — White-label A4
+# Logo Pack Studio V10 — Editorial Brand Board
 
-## Instalação
-Publica todos os ficheiros desta pasta na raiz do repositório GitHub Pages (não a pasta inteira). Mantém `app.js`, `pdf-local.js` e `jszip.min.js` ao lado de `index.html`.
+Static, single-file application for GitHub Pages. Upload `index.html` to repository root. No third-party libraries or service worker required.
 
-## Alterações
-- Manual A4 vertical com 20 páginas baseado na organização do modelo white-label fornecido pelo utilizador.
-- Pré-visualização das 20 páginas dentro da própria aplicação.
-- Gerador PDF local e autónomo (`pdf-local.js`) que converte as páginas para PDF A4 vertical.
-- ZIP criado por JSZip incluído localmente.
-- Auto Generate / Customize, cor sugerida, upload de logótipo, símbolo e fotografias.
-- Cache antiga do Service Worker removida no carregamento.
+Exports: PNG board, one-page PDF with JPEG-embedded board, and uncompressed ZIP containing board files, logo variants, uploaded source assets, color JSON, photos, and avatar.
 
-## Limitações
-- PDF é rasterizado (páginas em imagem JPEG), não um ficheiro vetorial editável.
-- Textos estratégicos, medidas mínimas, tipografia, cores CMYK e aprovações requerem validação humana.
-- SVG só é incluído quando o ficheiro original é SVG.
-- Para recoloração monocromática, usar logótipo com fundo transparente.
-- As aplicações são composições planas, não mockups fotográficos realistas.
-
-## Testes
-Foi verificada a sintaxe JS (`node --check`) e o pacote ZIP. O browser Chromium do ambiente de execução bloqueou navegação local e localhost, pelo que a exportação ainda requer teste no dispositivo.
+The visual is an original editorial grid inspired by the user's supplied reference, not a copy of the source site. SVG remains vector only as a source asset; raster logo recoloring works best with transparent SVG/PNG. PDF board is raster-based. Logo placement on photos is a flat compositing treatment, not photorealistic surface warping.
