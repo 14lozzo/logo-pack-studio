@@ -1,7 +1,7 @@
-# Logo Pack Studio V10 — Editorial Brand Board
+# Logo Pack Studio V11
 
-Static, single-file application for GitHub Pages. Upload `index.html` to repository root. No third-party libraries or service worker required.
+Publicar todos os ficheiros na raiz do repositorio GitHub Pages.
 
-Exports: PNG board, one-page PDF with JPEG-embedded board, and uncompressed ZIP containing board files, logo variants, uploaded source assets, color JSON, photos, and avatar.
+Alteracoes: demonstracoes de usos incorretos com cores e transformacoes reais; fonte local carregada no navegador; upload de ate quatro elementos graficos; exportacao de uma imagem unica das 20 paginas; paginas A4 renderizadas a 1440x2036 px; SVG original preservado no ZIP.
 
-The visual is an original editorial grid inspired by the user's supplied reference, not a copy of the source site. SVG remains vector only as a source asset; raster logo recoloring works best with transparent SVG/PNG. PDF board is raster-based. Logo placement on photos is a flat compositing treatment, not photorealistic surface warping.
+Avisos: a imagem unica e uma grelha 4x5 de paginas A4, nao uma nova composicao editorial; a recolorizacao requer transparencia; PDF rasterizado e CMYK nao certificado. Fonts precisam de licenca para redistribuicao. Fotografias e logotipos originais nao sao vetorizados.
