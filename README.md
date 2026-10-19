@@ -1,7 +1,21 @@
-# Logo Pack Studio V6 — automatic monochrome variants
+# Logo Pack Studio V7
 
-Upload only one required original logo (SVG or transparent PNG recommended). The app automatically generates a black transparent logo for white backgrounds and a white transparent logo for black backgrounds. Optional isolated symbol, and optional extra-color variant with configurable logo ink and background. ZIP/PDF libraries are bundled locally. No server needed; deploy all files from this folder at the GitHub Pages root.
+Aplicacao estatica para GitHub Pages, Android e PC. Publicar **todos** os ficheiros na raiz do repositorio (incluindo app.js, jszip.min.js e pdf-local.js). Sem build ou backend.
 
-Opaque images: approximate flood-fill background removal is attempted; inspect previews. Generated monochrome assets are raster files, not original vector SVGs. Original uploaded SVG remains vector. PDFs are rasterized locally. ZIP JPG versions have white/black/custom backgrounds as appropriate. PNG and WebP logo versions are transparent.
+## Funcionalidades
+- Upload de um logotipo principal e simbolo opcional
+- Deteccao sugerida de cor (confirmar manualmente)
+- Nove paginas editoriais inspiradas nas secoes do PDF de referencia
+- Fotografias opcionais e composicoes planas com logotipo
+- Pre-visualizacao dentro da app e PDF rasterizado local
+- ZIP local com logotipos, favicons, redes sociais, fotografias e PDF
+- Auto Generate e Customize
 
-V6.1: corrigido ICO (Blob -> ArrayBuffer), abertura da pré-visualização PDF antes da operação assíncrona, cache PWA renovada.
+## Limites
+- Usar SVG ou PNG transparente para gerar preto/branco com fidelidade
+- Sem vetorizacao automatica, sem CMYK certificado, sem mockups fotograficos realistas
+- PDF rasterizado, ficheiros de marca a rever antes de entregar
+- Projeto estatico: nao armazena os uploads num servidor
+
+## Teste
+Carregar SVG/PNG transparente, escolher cores, opcionalmente fotografias, avancar para Export, descarregar PDF e ZIP. Se houver erro, a interface mostra a mensagem. Para Android, adicionar ao ecra inicial no Chrome.
