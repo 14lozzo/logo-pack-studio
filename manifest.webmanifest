@@ -1,1 +1,1 @@
-{"name":"Logo Pack Studio","short_name":"Logo Pack","start_url":"./","display":"standalone","background_color":"#f5f4f1","theme_color":"#171717","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{"name":"Logo Pack Studio","short_name":"Logo Pack","description":"Gerador gratuito de brand packs","start_url":"./","scope":"./","display":"standalone","background_color":"#F5EEE9","theme_color":"#8C263D","icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

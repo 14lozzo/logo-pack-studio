@@ -1,6 +1,20 @@
-# Logo Pack Studio
-Webapp gratuita para Android e PC. Publica os quatro ficheiros na raiz de um repositório GitHub público e ativa Settings > Pages > Deploy from a branch > main /root.
+# Logo Pack Studio — Auto Generate / Customize
 
-Abre o URL publicado no Chrome Android e usa Adicionar ao ecrã principal / Instalar aplicação.
+Aplicação estática para GitHub Pages, Android e desktop.
 
-Nota: JSZip e jsPDF são carregados por CDN, por isso é necessária ligação à internet na primeira utilização (e na geração após recarregar sem cache). Os ficheiros de marca são processados localmente. PNG não é vetorizado. A recoloração SVG monocromática deve ser verificada em símbolos complexos.
+## Publicação
+Carrega os quatro ficheiros (`index.html`, `icon.svg`, `manifest.webmanifest`, `sw.js`) para a raiz do repositório GitHub e ativa Settings > Pages > Deploy from a branch > main / root.
+
+## Utilização
+1. Carrega **Original**, **Branco** e **Preto** (obrigatórios). O **Símbolo** é opcional.
+2. Em **Auto Generate**, gera tudo com as definições predefinidas. Em **Customize**, escolhe formatos e conteúdos.
+3. Descarrega o ZIP gerado no próprio dispositivo.
+
+## Formatos e limitações
+- PNG, JPG, WebP, ICO (favicon PNG-embedded), SVG (apenas quando a entrada é SVG), PDF (guia de 18 páginas).
+- Os SVG originais são preservados. Imagens bitmap não são vetorizadas.
+- JPG não suporta transparência. PNG/WebP mantêm transparência quando presente na origem.
+- PDF é um manual de identidade visual; não é automaticamente um ficheiro de arte-final CMYK.
+- Não exporta EPS nem CMYK certificado.
+- JSZip e jsPDF são carregados por CDN e requerem internet na primeira utilização.
+- Os ficheiros são processados no browser, sem upload para servidor.
