@@ -18,3 +18,5 @@ PNG/JPG/WebP multiple sizes, original SVG when provided, favicon.ico, icons, soc
 - Social assets are branded logo placements, not a full social design system.
 - Mockups are illustrations, not photorealistic renders.
 - SVGs should be trusted files: do not upload untrusted SVG content.
+
+PDF and ZIP libraries are now local. The PDF is 18-page raster-based (not print-ready vector PDF).
