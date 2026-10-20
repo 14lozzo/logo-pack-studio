@@ -60,62 +60,82 @@ async function guidePdf(){let arr=[];for(let i=0;i<20;i++){status(`A gerar Brand
 async function previewGuide(){let target=$('guide-thumbs');target.innerHTML='';for(let i of [0,9,11]){let wrap=document.createElement('div'),cv=paintPage(i,.28);wrap.appendChild(cv);let label=document.createElement('small');label.textContent=(i+1)+' · '+pageTitles[i];wrap.appendChild(label);target.appendChild(wrap)}}
 $('refreshGuide').onclick=()=>previewGuide().catch(e=>status(e.message));
 async function logoRaster(im,kind,size=1024){let cv=document.createElement('canvas');cv.width=cv.height=size;let x=cv.getContext('2d');let sc=Math.min(size*.8/im.width,size*.8/im.height),w=im.width*sc,h=im.height*sc;x.drawImage(im,(size-w)/2,(size-h)/2,w,h);if(kind!=='original'){let data=x.getImageData(0,0,size,size).data,edge=[3,(size-1)*4+3,((size-1)*size)*4+3,(size*size-1)*4+3];if(edge.every(j=>data[j]>245))throw Error('O ficheiro do logótipo tem fundo opaco; as versões preta/branca precisam de transparência.');x.globalCompositeOperation='source-in';x.fillStyle=kind==='black'?'#000':kind==='white'?'#fff':$('accent').value;x.fillRect(0,0,size,size);x.globalCompositeOperation='source-over'}return cv}
-async function exportPack(which){let button=$(which);button.disabled=true;try{if(!logo)throw Error('Carrega primeiro o logótipo original.');let name=slug();if(which==='png'){status('A gerar Brand Board PNG…');save(await boardBlob(),name+'-brand-board.png');status('Brand Board PNG gerado.');return}if(which==='pdf'){let pdf=await guidePdf();save(pdf,name+'-brand-guidelines-20p.pdf');status('Brand Guidelines PDF de 20 páginas gerado.');return}status('A preparar o Brand Pack…');let e=[],root=name+'/',add=async(n,b)=>e.push([root+n,await bytes(b)]);let boardPng=await boardBlob();await add('01_Brand_Board/brand-board.png',boardPng);let guide=await guidePdf();await add('02_Brand_Guidelines/brand-guidelines-20p.pdf',guide);let palette={brand:$('brand').value,primary:$('accent').value,support:$('second').value,accent:$('golden').value,dark:$('dark').value,light:$('light').value,formula:'HSL support saturation x0.4, accent hue +137.5 degrees'};e.push([root+'03_Colors/palette.json',ascii(JSON.stringify(palette,null,2))]);e.push([root+'03_Colors/palette.txt',ascii(Object.entries(palette).map(([k,v])=>k+': '+v).join('\n'))]);for(let id of ['logo','symbol'])if(files[id])await add('04_Original_Assets/'+id+'-'+files[id].name,files[id]);if(files.font)await add('04_Original_Assets/font-'+files.font.name,files.font);if(files.photos)for(let i=0;i<files.photos.length;i++)await add('05_Photography/'+String(i+1).padStart(2,'0')+'-'+files.photos[i].name,files.photos[i]);for(let i=0;i<graphicFiles.length;i++)await add('06_Graphic_Elements/'+graphicFiles[i].name,graphicFiles[i]);for(let kind of ['original','black','white']){try{let cv=await logoRaster(logo,kind);await add('07_Logo_Versions/'+kind+'-transparent.png',await blobCanvas(cv));if(kind==='black'||kind==='white'){let x=cv.getContext('2d');x.globalCompositeOperation='destination-over';x.fillStyle=kind==='black'?'#fff':'#000';x.fillRect(0,0,cv.width,cv.height);x.globalCompositeOperation='source-over';await add('07_Logo_Versions/'+kind+'-on-'+(kind==='black'?'white':'black')+'.png',await blobCanvas(cv))}}catch(err){e.push([root+'07_Logo_Versions/NOTICE-'+kind+'.txt',ascii(err.message)])}}{let cv=await logoRaster(logo,'original');let x=cv.getContext('2d');x.globalCompositeOperation='destination-over';x.fillStyle=$('second').value;x.fillRect(0,0,cv.width,cv.height);x.globalCompositeOperation='source-over';await add('07_Logo_Versions/original-on-secondary.png',await blobCanvas(cv))}for(let size of [16,24,32,48,64,128,180,192,256,512]){let cv=document.createElement('canvas');cv.width=cv.height=size;let x=cv.getContext('2d');let im=symbol||logo;let sc=Math.min(size*.78/im.width,size*.78/im.height);x.drawImage(im,(size-im.width*sc)/2,(size-im.height*sc)/2,im.width*sc,im.height*sc);await add('08_Favicons/icon-'+size+'.png',await blobCanvas(cv))}
-// SVG color variants retain vector source geometry through an SVG alpha mask.
-// Only valid for an SVG original; PNG input never becomes a fake vector.
-function svgVariant(sourceText,kind,secondary){
- const doc=new DOMParser().parseFromString(sourceText,'image/svg+xml');
- const original=doc.documentElement;
- if(!original||original.localName!=='svg'||doc.querySelector('parsererror'))throw Error('SVG original invalido');
- const vb=original.getAttribute('viewBox');
- const rawW=original.getAttribute('width')||'1024';
- const rawH=original.getAttribute('height')||'1024';
- const num=v=>{let n=parseFloat(v);return Number.isFinite(n)&&n>0?n:1024};
- const w=vb?num(vb.trim().split(/[ ,]+/)[2]):num(rawW);
- const h=vb?num(vb.trim().split(/[ ,]+/)[3]):num(rawH);
- const view=vb||('0 0 '+w+' '+h);
+async function exportPack(which){let button=$(which);button.disabled=true;try{if(!logo)throw Error('Carrega primeiro o logótipo original.');let name=slug();if(which==='png'){status('A gerar Brand Board PNG…');save(await boardBlob(),name+'-brand-board.png');status('Brand Board PNG gerado.');return}if(which==='pdf'){let pdf=await guidePdf();save(pdf,name+'-brand-guidelines-20p.pdf');status('Brand Guidelines PDF de 20 páginas gerado.');return}status('A preparar o Brand Pack…');let e=[],root=name+'/',add=async(n,b)=>e.push([root+n,await bytes(b)]);let boardPng=await boardBlob();await add('01_Brand_Board/brand-board.png',boardPng);let guide=await guidePdf();await add('02_Brand_Guidelines/brand-guidelines-20p.pdf',guide);let palette={brand:$('brand').value,primary:$('accent').value,support:$('second').value,accent:$('golden').value,dark:$('dark').value,light:$('light').value,formula:'HSL support saturation x0.4, accent hue +137.5 degrees'};e.push([root+'03_Colors/palette.json',ascii(JSON.stringify(palette,null,2))]);e.push([root+'03_Colors/palette.txt',ascii(Object.entries(palette).map(([k,v])=>k+': '+v).join('\n'))]);for(let id of ['logo','symbol'])if(files[id])await add('04_Original_Assets/'+id+'-'+files[id].name,files[id]);if(files.font)await add('04_Original_Assets/font-'+files.font.name,files.font);if(files.photos)for(let i=0;i<files.photos.length;i++)await add('05_Photography/'+String(i+1).padStart(2,'0')+'-'+files.photos[i].name,files.photos[i]);for(let i=0;i<graphicFiles.length;i++)await add('06_Graphic_Elements/'+graphicFiles[i].name,graphicFiles[i]);// V15: independent logo/symbol variants, consistent raster and vector outputs.
+const secondary=$('second').value;
+const primary=$('accent').value;
+const [invHue,invSat,invLight]=hexToHsl(primary);
+const inverse=hslToHex((invHue+180)%360,invSat,invLight);
+const sizes=[16,24,32,48,64,128,180,192,256,512];
+const variants=[
+ ['original-transparent','original',null],
+ ['black-transparent','black',null],
+ ['white-transparent','white',null],
+ ['black-on-white','black','#FFFFFF'],
+ ['white-on-black','white','#000000'],
+ ['original-on-secondary','original',secondary]
+];
+function drawVariant(im,kind,bg,size=1024,fit=.8){
+ const cv=document.createElement('canvas');cv.width=cv.height=size;
+ const c=cv.getContext('2d',{willReadFrequently:true});
+ const k=Math.min(size*fit/im.width,size*fit/im.height),w=im.width*k,h=im.height*k;
+ c.drawImage(im,(size-w)/2,(size-h)/2,w,h);
+ if(kind!=='original'){
+  const data=c.getImageData(0,0,size,size).data;
+  const corners=[3,(size-1)*4+3,(size*(size-1))*4+3,(size*size-1)*4+3];
+  if(corners.every(i=>data[i]>245))throw Error('Imagem sem transparencia: nao e possivel recolorir com fidelidade.');
+  c.globalCompositeOperation='source-in';c.fillStyle=kind;c.fillRect(0,0,size,size);
+  c.globalCompositeOperation='source-over';
+ }
+ if(bg){c.globalCompositeOperation='destination-over';c.fillStyle=bg;c.fillRect(0,0,size,size);c.globalCompositeOperation='source-over';}
+ return cv;
+}
+function sourceSVG(source){
+ const doc=new DOMParser().parseFromString(source,'image/svg+xml');
+ if(doc.querySelector('parsererror')||doc.documentElement?.localName!=='svg')throw Error('SVG invalido');
+ return source;
+}
+function svgVariant(source,kind,bg,fit=.8){
  const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
- const source='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sourceText);
- const base='<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="'+esc(view)+'">';
- if(kind==='original-on-secondary')return base+'<rect width="100%" height="100%" fill="'+esc(secondary)+'"/><image href="'+esc(source)+'" x="0" y="0" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"/></svg>';
- const ink=kind==='black'||kind==='black-on-white'?'#000000':'#FFFFFF';
- const bg=kind==='black-on-white'?'#FFFFFF':kind==='white-on-black'?'#000000':null;
- return base+'<defs><mask id="source-alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%" style="mask-type:alpha"><image href="'+esc(source)+'" x="0" y="0" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"/></mask></defs>'+(bg?'<rect width="100%" height="100%" fill="'+bg+'"/>':'')+'<rect width="100%" height="100%" fill="'+ink+'" mask="url(#source-alpha)"/></svg>';
+ const uri='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(source)));
+ const margin=(1-fit)/2*100;
+ const pct=(fit*100);
+ const image='<image href="'+uri+'" x="'+margin+'%" y="'+margin+'%" width="'+pct+'%" height="'+pct+'%" preserveAspectRatio="xMidYMid meet"/>';
+ const head='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024" width="1024" height="1024">';
+ const background=bg?'<rect width="1024" height="1024" fill="'+esc(bg)+'"/>':'';
+ if(kind==='original')return head+background+image+'</svg>';
+ return head+'<defs><mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024" style="mask-type:alpha">'+image+'</mask></defs>'+background+'<rect width="1024" height="1024" fill="'+esc(kind)+'" mask="url(#a)"/></svg>';
 }
-// V15 ZIP repair: preserve true source vectors, add symbol PNG variants and vector favicon when possible.
-for(let id of ['logo','symbol']){
-  const source=files[id];
-  if(!source)continue;
-  const folder=id==='logo'?'07_Logo_Versions/':'10_Symbol_Versions/';
-  const ext=(source.name.split('.').pop()||'').toLowerCase();
-  if(ext==='svg'){
-    const sourceText=await source.text();
-    const doc=new DOMParser().parseFromString(sourceText,'image/svg+xml');
-    if(doc.documentElement?.localName==='svg'&&!doc.querySelector('parsererror')){
-      const variants=['original-transparent','black-transparent','white-transparent','black-on-white','white-on-black','original-on-secondary'];
-      for(const variant of variants){
-        const svgText=variant==='original-transparent'?sourceText:svgVariant(sourceText,variant.replace('-transparent',''),$('second').value);
-        e.push([root+folder+variant+'.svg',ascii(svgText)]);
-      }
-      e.push([root+folder+id+'-original.svg',ascii(sourceText)]);
-      if(id==='symbol'||(id==='logo'&&!files.symbol))e.push([root+'08_Favicons/favicon.svg',ascii(sourceText)]);
-    }
-  }
-  if(id==='symbol'&&symbol){
-    for(let kind of ['original','black','white']){
-      try{
-        let cv=await logoRaster(symbol,kind);
-        await add(folder+kind+'-transparent.png',await blobCanvas(cv));
-        if(kind==='black'||kind==='white'){
-          let x=cv.getContext('2d');x.globalCompositeOperation='destination-over';
-          x.fillStyle=kind==='black'?'#FFFFFF':'#000000';x.fillRect(0,0,cv.width,cv.height);
-          x.globalCompositeOperation='source-over';
-          await add(folder+kind+'-on-'+(kind==='black'?'white':'black')+'.png',await blobCanvas(cv));
-        }
-      }catch(err){e.push([root+folder+'NOTICE-'+kind+'.txt',ascii(err.message)])}
-    }
-  }
-    {let cv=await logoRaster(symbol,'original');let x=cv.getContext('2d');x.globalCompositeOperation='destination-over';x.fillStyle=$('second').value;x.fillRect(0,0,cv.width,cv.height);x.globalCompositeOperation='source-over';await add(folder+'original-on-secondary.png',await blobCanvas(cv));}
+for(const asset of [{id:'logo',im:logo,folder:'07_Logo_Versions/'},{id:'symbol',im:symbol,folder:'10_Symbol_Versions/'}]){
+ if(!asset.im)continue;
+ const f=files[asset.id];
+ const svgSource=f&&/\.svg$/i.test(f.name)?sourceSVG(await f.text()):null;
+ for(const [name,mode,bg] of variants){
+  try{
+   const ink=mode==='black'?'#000000':mode==='white'?'#FFFFFF':'original';
+   await add(asset.folder+name+'.png',await blobCanvas(drawVariant(asset.im,ink,bg)));
+   if(svgSource){
+    // Source SVG is preserved as a vector image; never vectorize PNG by relabeling.
+    const svg=name==='original-transparent'?svgSource:svgVariant(svgSource,ink,bg);
+    e.push([root+asset.folder+name+'.svg',ascii(svg)]);
+   }
+  }catch(err){e.push([root+asset.folder+'NOTICE-'+name+'.txt',ascii(err.message)]);}
+ }
+ if(svgSource)e.push([root+asset.folder+asset.id+'-original.svg',ascii(svgSource)]);
 }
-for(let [label,w,h] of [['avatar',1024,1024],['post',1080,1080],['story',1080,1920],['banner',1500,500]]){let cv=document.createElement('canvas');cv.width=w;cv.height=h;let x=cv.getContext('2d');x.fillStyle=$('light').value;x.fillRect(0,0,w,h);let im=symbol||logo,sc=Math.min(w*.68/im.width,h*.68/im.height);x.drawImage(im,(w-im.width*sc)/2,(h-im.height*sc)/2,im.width*sc,im.height*sc);await add('09_Social_Media/'+label+'.png',await blobCanvas(cv))}e.push([root+'README.txt',ascii('Logo Pack Studio V15 ZIP repair\n01 Brand Board PNG\n02 Brand Guidelines PDF (20 paginas A4)\n03 Cores\n04 Originais\n05 Fotografias\n06 Graficos\n07 Versoes de logotipo\n08 Favicons\n09 Redes sociais\n10 Versoes de simbolo (se fornecido)\n\nSeis versoes oficiais: original, preto, branco, preto sobre branco, branco sobre preto, original sobre secundario. A cor secundaria usa o campo second da paleta. SVG original e variantes SVG escalaveis por mascara alfa quando o ficheiro de origem e SVG. As variantes SVG preservam a geometria vetorial incorporada, nao sao paths recoloridos editaveis individualmente. PNG nao e convertido artificialmente em vetor.\n\nPDF rasterizado. CMYK e valores de impressao nao certificados. Fontes sujeitas a licenca.\n')]);save(zip(e),name+'-complete-brand-pack.zip');status('ZIP completo gerado. '+e.length+' ficheiros.')}catch(err){console.error(err);status('Erro: '+err.message)}finally{button.disabled=false}}
+// Favicons: always transparent; original, black, white and hue-inverse.
+const fav=symbol||logo;
+const favFile=symbol&&files.symbol?files.symbol:files.logo;
+const favSVG=favFile&&/\.svg$/i.test(favFile.name)?sourceSVG(await favFile.text()):null;
+const favColors=[['original','original'],['black','#000000'],['white','#FFFFFF'],['inverse',inverse]];
+for(const [label,ink] of favColors){
+ for(const size of sizes){
+  try{await add('08_Favicons/'+label+'/icon-'+size+'.png',await blobCanvas(drawVariant(fav,ink,null,size,.78)));}
+  catch(err){e.push([root+'08_Favicons/'+label+'/NOTICE.txt',ascii(err.message)]);break;}
+ }
+ if(favSVG){
+  const svg=label==='original'?favSVG:svgVariant(favSVG,ink,null,.78);
+  e.push([root+'08_Favicons/'+label+'/favicon.svg',ascii(svg)]);
+ }
+}
+for(let [label,w,h] of [['avatar',1024,1024],['post',1080,1080],['story',1080,1920],['banner',1500,500]]){let cv=document.createElement('canvas');cv.width=w;cv.height=h;let x=cv.getContext('2d');x.fillStyle=$('light').value;x.fillRect(0,0,w,h);let im=symbol||logo,sc=Math.min(w*.68/im.width,h*.68/im.height);x.drawImage(im,(w-im.width*sc)/2,(h-im.height*sc)/2,im.width*sc,im.height*sc);await add('09_Social_Media/'+label+'.png',await blobCanvas(cv))}e.push([root+'README.txt',ascii('Logo Pack Studio V15 ZIP repair\n01 Brand Board PNG\n02 Brand Guidelines PDF (20 paginas A4)\n03 Cores\n04 Originais\n05 Fotografias\n06 Graficos\n07 Versoes de logotipo\n08 Favicons\n09 Redes sociais\n10 Versoes de simbolo (se fornecido)\n\nSeis versoes oficiais: original, preto, branco, preto sobre branco, branco sobre preto, original sobre secundario. A cor secundaria usa o campo second da paleta. Favicons transparentes: original, preto, branco e inversa (matiz +180 graus), 10 tamanhos. SVG original e variantes SVG escalaveis por mascara alfa quando o ficheiro de origem e SVG. As variantes SVG preservam a geometria vetorial incorporada, nao sao paths recoloridos editaveis individualmente. PNG nao e convertido artificialmente em vetor.\n\nPDF rasterizado. CMYK e valores de impressao nao certificados. Fontes sujeitas a licenca.\n')]);save(zip(e),name+'-complete-brand-pack.zip');status('ZIP completo gerado. '+e.length+' ficheiros.')}catch(err){console.error(err);status('Erro: '+err.message)}finally{button.disabled=false}}
 ['png','pdf','zip'].forEach(id=>$(id).onclick=()=>exportPack(id));render();previewGuide();
