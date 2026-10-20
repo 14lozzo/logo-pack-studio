@@ -23,7 +23,7 @@ const fields=container.querySelector('#cps-fields');
  wrap.append(cap,picker,input);fields.appendChild(wrap);
 });
 container.querySelector('#cps-method').addEventListener('change',e=>{paletteState.method=e.target.value;paletteState.manualA=null;paletteState.manualB=null;refreshPalette()});container.querySelector('#cps-lightness').addEventListener('input',e=>{paletteState.lightness=Number(e.target.value);paletteState.manualA=null;paletteState.manualB=null;refreshPalette()});container.querySelector('#cps-reset').addEventListener('click',()=>{paletteState.manualA=null;paletteState.manualB=null;refreshPalette()});
-const stage=target.closest('.stage')||target.closest('.panel')||target.parentElement;const title=stage.querySelector('h2');const intro=title?.nextElementSibling;const anchor=intro&&intro.tagName==='P'?intro:title;if(anchor)anchor.insertAdjacentElement('afterend',container);else stage.insertBefore(container,stage.firstChild);syncPaletteStudio();}
+const stage=document.querySelector('.stage[data-stage="0"]')||target.closest('.stage')||target.closest('.panel')||target.parentElement;stage.appendChild(container);syncPaletteStudio();}
 readPalette();updatePalette();
 $('accent').addEventListener('input',()=>{if(validHex($('accent').value)){paletteState.primary=$('accent').value.toUpperCase();refreshPalette()}});
 $('second').addEventListener('input',()=>{if(validHex($('second').value)){paletteState.secondary=$('second').value.toUpperCase();refreshPalette()}});
@@ -172,5 +172,12 @@ for(let [label,w,h] of [['avatar',1024,1024],['post',1080,1080],['story',1080,19
 // V15 UI may move color controls after this script loads.
 setTimeout(()=>{if(!document.getElementById('color-palette-studio'))installPaletteStudio();},650);
 
-// Ensure the palette remains immediately below the Brand Setup heading/intro after V15 layout setup.
-setTimeout(()=>{const el=document.getElementById('color-palette-studio'),setup=document.querySelector('.stage[data-stage="0"]');if(el&&setup){const heading=setup.querySelector('h2'),intro=heading?.nextElementSibling,anchor=intro?.tagName==='P'?intro:heading;if(anchor&&anchor.nextElementSibling!==el)anchor.insertAdjacentElement('afterend',el);}},800);
+// Keep the Color Palette Studio at the END of 01 / Brand Setup,
+// after all brand fields and before the 02 / Visual Assets tab.
+function placePaletteLast(){
+ const palette=document.getElementById('color-palette-studio');
+ const setup=document.querySelector('.stage[data-stage="0"]');
+ if(palette&&setup&&setup.lastElementChild!==palette)setup.appendChild(palette);
+}
+setTimeout(placePaletteLast,800);
+setTimeout(placePaletteLast,1600);
