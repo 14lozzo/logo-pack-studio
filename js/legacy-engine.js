@@ -260,3 +260,107 @@ const ready=()=>{
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(ready,350));else setTimeout(ready,350);
 })();
+
+/* V17 — Brand Guidelines Builder. Local, editable, no external APIs. */
+(function(){
+'use strict';
+const init=()=>{
+ const stage=document.querySelector('.stage[data-stage="2"]');
+ if(!stage||document.getElementById('v17-builder'))return;
+ const style=document.createElement('style');style.textContent=`
+ #v17-builder{background:#fff;border:1px solid #ded8d2;border-radius:14px;padding:18px;margin:18px 0;color:#242124}
+ #v17-builder h3{margin:0 0 6px;font-size:19px}#v17-builder p{font-size:12px;color:#6d6765;line-height:1.5}
+ .v17-row{border-top:1px solid #e9e5e1;padding:10px 0;display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:start}
+ .v17-row input[type=text],.v17-row textarea{width:100%;box-sizing:border-box;border:1px solid #d6d1cc;border-radius:6px;padding:8px;font:12px Arial;color:#222;background:white}
+ .v17-row textarea{resize:vertical;min-height:50px;margin-top:6px}.v17-row label{font-size:12px;font-weight:600}
+ #v17-builder button{padding:9px 12px;background:#f6f2ee;border:1px solid #d7d0c9;border-radius:7px;cursor:pointer}
+ .v17-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.v17-note{font-size:11px!important}
+ `;document.head.appendChild(style);
+ const section=document.createElement('section');section.id='v17-builder';
+ section.innerHTML='<h3>Brand Guidelines Builder · V17</h3><p>Personaliza o conteúdo e escolhe as páginas a entregar. A pré-visualização e o PDF usam a mesma seleção. Mantém-se a estrutura A4 existente.</p><div class="v17-toolbar"><button type="button" id="v17-all">Selecionar todas</button><button type="button" id="v17-default">Repor conteúdo</button></div><div id="v17-pages"></div><p class="v17-note">As notas são adicionadas à respetiva página. Os elementos gráficos continuam a ser produzidos pelo motor original; revê sempre o PDF antes de entregar.</p>';
+ stage.insertBefore(section,stage.firstChild);
+ const descriptions=[
+ 'Identidade visual e assinatura da marca.', 'Estrutura e conteúdos do documento.',
+ 'História, posicionamento e proposta de valor.', 'Valores, personalidade e tom de voz.',
+ 'Elementos centrais do sistema de identidade.', 'Logótipo oficial: respeitar a geometria original.',
+ 'Variantes aprovadas para fundos claros e escuros.', 'Manter espaço livre à volta da marca.',
+ 'Garantir legibilidade em formatos pequenos.', 'Evitar distorções, efeitos e alterações arbitrárias.',
+ 'Cores oficiais e respetivas referências HEX.', 'Famílias tipográficas e caracteres de referência.',
+ 'Hierarquia visual para títulos, textos e legendas.', 'Elementos gráficos que complementam o logótipo.',
+ 'Padrões derivados do símbolo original.', 'Fotografia: enquadramento, luz e ambiente.',
+ 'Aplicações para formatos de redes sociais.', 'Exemplos de aplicação da identidade.',
+ 'Organização dos ficheiros e formatos de entrega.', 'Verificações antes da entrega ao cliente.'
+ ];
+ const defaults=pageTitles.map((title,i)=>({title,description:descriptions[i],enabled:true}));
+ const data=defaults.map(x=>({...x}));window.__v17Guidelines=data;
+ const holder=document.getElementById('v17-pages');
+ const build=()=>{holder.replaceChildren();data.forEach((page,i)=>{
+  const row=document.createElement('div');row.className='v17-row';
+  const check=document.createElement('input');check.type='checkbox';check.checked=page.enabled;check.title='Incluir página '+(i+1);check.onchange=()=>{page.enabled=check.checked;refresh()};
+  const fields=document.createElement('div');const label=document.createElement('label');label.textContent=String(i+1).padStart(2,'0')+' · '+defaults[i].title;
+  const title=document.createElement('input');title.type='text';title.value=page.title;title.maxLength=80;title.setAttribute('aria-label','Título da página '+(i+1));title.oninput=()=>{page.title=title.value||defaults[i].title;refresh()};
+  const note=document.createElement('textarea');note.value=page.description;note.maxLength=300;note.setAttribute('aria-label','Nota da página '+(i+1));note.oninput=()=>{page.description=note.value;refresh()};
+  fields.append(label,title,note);row.append(check,fields);holder.appendChild(row);
+ })};
+ let refreshTimer;const refresh=()=>{clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>previewGuide().catch(console.warn),180)};
+ document.getElementById('v17-all').onclick=()=>{data.forEach(p=>p.enabled=true);build();refresh()};
+ document.getElementById('v17-default').onclick=()=>{defaults.forEach((p,i)=>Object.assign(data[i],p));build();refresh()};
+ build();
+ const originalPaint=paintPage;
+ paintPage=function(index,scale=1){
+  const c=originalPaint(index,scale),p=data[index];if(!p)return c;
+  const x=c.getContext('2d');x.save();x.scale(scale,scale);
+  if(index>0&&p.title!==defaults[index].title){
+   x.fillStyle='#ffffff';x.fillRect(50,146,800,85);
+   x.font='bold 45px Georgia';x.fillStyle=document.getElementById('dark')?.value||'#211F20';
+   const title=p.title.length>34?p.title.slice(0,33)+'…':p.title;x.fillText(title,55,209);
+  }
+  if(p.description){
+   x.fillStyle='#fff';x.fillRect(54,1108,794,67);
+   x.fillStyle=document.getElementById('dark')?.value||'#211F20';x.font='18px Arial';
+   const words=p.description.split(/\s+/);let line='',y=1130;
+   for(const word of words){const next=line?line+' '+word:word;if(x.measureText(next).width>770){x.fillText(line,55,y);line=word;y+=23;if(y>1168)break}else line=next}
+   if(line&&y<=1168)x.fillText(line,55,y);
+  }
+  x.restore();return c;
+ };
+ const originalPdf=guidePdf;
+ guidePdf=async function(){
+  const selected=data.map((p,i)=>p.enabled?i:-1).filter(i=>i>=0);
+  if(!selected.length)throw Error('Seleciona pelo menos uma página nas Guidelines.');
+  const pages=[];
+  for(let j=0;j<selected.length;j++){
+   const i=selected[j];status('A gerar Guidelines: '+(j+1)+'/'+selected.length+'…');
+   await new Promise(resolve=>setTimeout(resolve,0));
+   const c=paintPage(i,1.6),blob=await blobCanvas(c,'image/jpeg',.88);
+   pages.push({bytes:await bytes(blob),w:c.width,h:c.height});c.width=c.height=1;
+  }
+  return pdfPages(pages);
+ };
+ previewGuide=async function(){
+  const target=document.getElementById('guide-thumbs');if(!target)return;
+  target.replaceChildren();const selected=data.map((p,i)=>p.enabled?i:-1).filter(i=>i>=0);
+  for(const i of selected.slice(0,6)){
+   const wrap=document.createElement('div'),canvas=paintPage(i,.28),label=document.createElement('small');
+   label.textContent=(i+1)+' · '+data[i].title;wrap.append(canvas,label);target.appendChild(wrap);
+  }
+ };
+ // Enrich the existing ZIP without changing its logo, favicon or board exports.
+ const originalZip=zip;
+ zip=function(entries){
+  const root=(slug()||'brand')+'/';
+  entries.push([root+'02_Brand_Guidelines/guidelines-content.json',enc.encode(JSON.stringify(data,null,2))]);
+  const font=window.__v16UploadedFonts||{};
+  const typography={display:document.getElementById('v16-display')?.value||'Georgia',body:document.getElementById('v16-body')?.value||'Arial',displayFile:font.display?.file?.name||null,bodyFile:font.body?.file?.name||null,titleSize:document.getElementById('v16-size')?.value||36,tracking:document.getElementById('v16-tracking')?.value||0};
+  entries.push([root+'11_Typography/typography.json',enc.encode(JSON.stringify(typography,null,2))]);
+  const pattern=document.getElementById('v16-pattern-canvas');
+  if(pattern){try{const base64=pattern.toDataURL('image/png').split(',')[1];const binary=atob(base64),out=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)out[i]=binary.charCodeAt(i);entries.push([root+'12_Patterns/pattern-preview.png',out]);}catch(e){console.warn('Pattern preview omitted:',e)}}
+  return originalZip(entries);
+ };
+ const pdfButton=document.getElementById('pdf');if(pdfButton)pdfButton.onclick=()=>exportPack('pdf');
+ const zipButton=document.getElementById('zip');if(zipButton)zipButton.onclick=()=>exportPack('zip');
+ document.getElementById('v15-new')?.addEventListener('click',()=>{defaults.forEach((p,i)=>Object.assign(data[i],p));build();refresh()});
+ refresh();
+};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,700));else setTimeout(init,700);
+})();
