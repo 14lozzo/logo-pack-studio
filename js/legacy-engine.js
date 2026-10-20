@@ -181,3 +181,60 @@ function placePaletteLast(){
 }
 setTimeout(placePaletteLast,800);
 setTimeout(placePaletteLast,1600);
+
+
+/* V16 - Typography Studio + Pattern Studio (local, no API). */
+(function(){
+'use strict';
+const ready=()=>{
+ const setup=document.querySelector('.stage[data-stage="0"]');
+ const assets=document.querySelector('.stage[data-stage="1"]');
+ if(!setup||!assets||document.getElementById('v16-typography'))return;
+ const css=document.createElement('style');css.textContent=`
+ .v16-studio{border:1px solid #ddd6d0;border-radius:13px;padding:17px;margin:16px 0;background:#fff;color:#242124}
+ .v16-studio h3{margin:0 0 7px;font-size:18px}.v16-studio p{font-size:12px;color:#68636a;line-height:1.5}
+ .v16-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+ .v16-grid label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600}
+ .v16-grid select,.v16-grid input{width:100%;box-sizing:border-box;border:1px solid #d4cfcb;border-radius:6px;padding:8px;background:white;color:#262326}
+ .v16-preview{margin:12px 0;padding:16px;border:1px solid #e5dfd9;border-radius:8px;overflow:hidden}
+ .v16-preview h4{margin:0 0 6px;font-size:32px;line-height:1.15;font-weight:500;overflow-wrap:anywhere}
+ .v16-preview p{font-size:13px;margin:0;overflow-wrap:anywhere}
+ .v16-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+ .v16-actions button{border:1px solid #d2c9c1;border-radius:7px;background:#f9f7f4;color:#252025;padding:9px 12px;cursor:pointer;font-size:12px}
+ #v16-pattern-canvas{width:100%;height:auto;display:block;border:1px solid #e1dad4;border-radius:8px;margin-top:12px}
+ @media(max-width:560px){.v16-grid{grid-template-columns:1fr}}
+ `;document.head.appendChild(css);
+ const ty=document.createElement('section');ty.id='v16-typography';ty.className='v16-studio';
+ ty.innerHTML=`<h3>Typography Studio</h3><p>Define a hierarquia tipográfica da marca. As sugestões são locais e editáveis; não utilizam IA nem descarregam fontes.</p><div class="v16-grid"><label>Fonte de títulos<select id="v16-display"><option value="Georgia">Georgia · editorial</option><option value="Times New Roman">Times New Roman · clássica</option><option value="Arial">Arial · minimalista</option><option value="Trebuchet MS">Trebuchet MS · contemporânea</option><option value="Verdana">Verdana · funcional</option><option value="Palatino Linotype">Palatino · literária</option></select></label><label>Fonte de texto<select id="v16-body"><option value="Arial">Arial · neutra</option><option value="Verdana">Verdana · legível</option><option value="Georgia">Georgia · editorial</option><option value="Trebuchet MS">Trebuchet MS · moderna</option><option value="Times New Roman">Times New Roman · clássica</option></select></label><label>Escala de título (px)<input id="v16-size" type="range" min="24" max="54" value="36"></label><label>Espaçamento (px)<input id="v16-tracking" type="range" min="-2" max="5" step="0.5" value="0"></label></div><div class="v16-preview" id="v16-type-preview"><h4 id="v16-title-preview">Identidade com personalidade.</h4><p id="v16-copy-preview">Uma linguagem visual consistente, clara e memorável.</p></div><div class="v16-actions"><button id="v16-type-download" type="button">Exportar regras tipográficas (.txt)</button></div>`;
+ const palette=document.getElementById('color-palette-studio');if(palette)setup.insertBefore(ty,palette);else setup.appendChild(ty);
+ const pat=document.createElement('section');pat.id='v16-pattern';pat.className='v16-studio';pat.innerHTML=`<h3>Pattern Studio</h3><p>Repete o símbolo SVG original sem alterar a sua geometria. Os padrões podem ser exportados como SVG ou PNG.</p><div class="v16-grid"><label>Espaçamento entre símbolos<input id="v16-gap" type="range" min="0" max="100" value="24"></label><label>Escala do símbolo<input id="v16-scale" type="range" min="12" max="110" value="46"></label><label>Rotação<input id="v16-rotate" type="range" min="-180" max="180" value="0"></label><label>Fundo<select id="v16-bg"><option value="secondary">Secundária</option><option value="primary">Principal</option><option value="white">Branco</option><option value="transparent">Transparente</option></select></label></div><canvas id="v16-pattern-canvas" width="900" height="500"></canvas><p id="v16-pattern-status">Carrega um símbolo SVG no Brand Setup para gerar o padrão.</p><div class="v16-actions"><button id="v16-pattern-svg" type="button">Exportar SVG</button><button id="v16-pattern-png" type="button">Exportar PNG</button></div>`;
+ assets.appendChild(pat);
+ const q=id=>document.getElementById(id);
+ const typeUpdate=()=>{q('v16-title-preview').style.fontFamily=`"${q('v16-display').value}",serif`;q('v16-title-preview').style.fontSize=q('v16-size').value+'px';q('v16-title-preview').style.letterSpacing=q('v16-tracking').value+'px';q('v16-copy-preview').style.fontFamily=`"${q('v16-body').value}",sans-serif`;q('v16-title-preview').textContent=(q('brand')?.value||'Identidade com personalidade.')+' — Design with purpose.';};
+ ['v16-display','v16-body','v16-size','v16-tracking'].forEach(id=>q(id).addEventListener('input',typeUpdate));q('brand')?.addEventListener('input',typeUpdate);typeUpdate();
+ const download=(blob,name)=>{const a=document.createElement('a');const u=URL.createObjectURL(blob);a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+ const safeName=()=>((q('brand')?.value||'brand').trim().replace(/[^a-z0-9-]+/gi,'-')||'brand');
+ q('v16-type-download').onclick=()=>{const t=`TYPOGRAPHY SYSTEM\nBrand: ${q('brand')?.value||''}\nDisplay: ${q('v16-display').value}\nBody: ${q('v16-body').value}\nTitle size: ${q('v16-size').value}px\nLetter spacing: ${q('v16-tracking').value}px\nFonts are local system-font suggestions. Check licenses before using alternative fonts.\n`;download(new Blob([t],{type:'text/plain'}),safeName()+'-typography.txt')};
+ const escapeAttr=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+ let svgData='',patternSvg='';
+ const color=id=>{const v=q(id)?.value||'';return /^#[a-f0-9]{6}$/i.test(v)?v:'#E9E1D5'};
+ const renderPattern=()=>{
+ const canvas=q('v16-pattern-canvas'),ctx=canvas.getContext('2d');ctx.clearRect(0,0,900,500);
+ const bg=q('v16-bg').value;const fill=bg==='primary'?color('accent'):bg==='secondary'?color('second'):bg==='white'?'#FFFFFF':'none';
+ if(fill!=='none'){ctx.fillStyle=fill;ctx.fillRect(0,0,900,500)}
+ if(!svgData){patternSvg='';q('v16-pattern-status').textContent='Carrega um símbolo SVG no Brand Setup para gerar o padrão.';return}
+ const size=Number(q('v16-scale').value)*2,gap=Number(q('v16-gap').value),cell=size+gap,rotation=Number(q('v16-rotate').value);
+ const img=new Image();img.onload=()=>{for(let y=-cell;y<500+cell;y+=cell){for(let x=-cell;x<900+cell;x+=cell){ctx.save();ctx.translate(x+size/2,y+size/2);ctx.rotate(rotation*Math.PI/180);ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore()}}};img.onerror=()=>{q('v16-pattern-status').textContent='O SVG não pôde ser apresentado. Verifica se é um SVG válido.'};img.src=svgData;
+ const tile=`<image href="${escapeAttr(svgData)}" x="${-size/2}" y="${-size/2}" width="${size}" height="${size}" transform="translate(${size/2} ${size/2}) rotate(${rotation})"/>`;
+ patternSvg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="900" height="500" viewBox="0 0 900 500"><defs><pattern id="tile" patternUnits="userSpaceOnUse" width="${cell}" height="${cell}">${tile}</pattern></defs>${fill==='none'?'':`<rect width="900" height="500" fill="${fill}"/>`}<rect width="900" height="500" fill="url(#tile)"/></svg>`;
+ q('v16-pattern-status').textContent='Padrão pronto · original preservado · 900 × 500 px';
+ };
+ const symbolInput=q('symbol');const loadSymbol=()=>{const file=symbolInput?.files?.[0];if(!file||!(/\.svg$/i.test(file.name)||file.type==='image/svg+xml')){svgData='';renderPattern();return}const reader=new FileReader();reader.onload=()=>{const raw=String(reader.result||'');const doc=new DOMParser().parseFromString(raw,'image/svg+xml');const root=doc.documentElement;if(root.nodeName.toLowerCase()!=='svg'||doc.querySelector('parsererror')||doc.querySelector('script,foreignObject,iframe,object,embed')){svgData='';q('v16-pattern-status').textContent='SVG inválido ou com conteúdo não permitido.';return}root.querySelectorAll('*').forEach(el=>{[...el.attributes].forEach(a=>{if(/^on/i.test(a.name)||/javascript:/i.test(a.value)||(/^(href|xlink:href)$/i.test(a.name)&&!a.value.startsWith('#')))el.removeAttribute(a.name)})});const cleaned=new XMLSerializer().serializeToString(root);svgData='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(cleaned)));renderPattern()};reader.readAsText(file)};
+ symbolInput?.addEventListener('change',loadSymbol);
+ ['v16-gap','v16-scale','v16-rotate','v16-bg','accent','second'].forEach(id=>q(id)?.addEventListener('input',renderPattern));
+ q('v16-pattern-svg').onclick=()=>{if(!patternSvg){q('v16-pattern-status').textContent='Primeiro carrega um símbolo SVG.';return}download(new Blob([patternSvg],{type:'image/svg+xml'}),safeName()+'-pattern.svg')};
+ q('v16-pattern-png').onclick=()=>{if(!patternSvg){q('v16-pattern-status').textContent='Primeiro carrega um símbolo SVG.';return}q('v16-pattern-canvas').toBlob(b=>{if(b)download(b,safeName()+'-pattern.png')},'image/png')};
+ const newButton=q('v15-new');newButton?.addEventListener('click',()=>{['v16-display','v16-body'].forEach(id=>q(id).selectedIndex=0);q('v16-size').value=36;q('v16-tracking').value=0;q('v16-gap').value=24;q('v16-scale').value=46;q('v16-rotate').value=0;q('v16-bg').selectedIndex=0;svgData='';typeUpdate();renderPattern()});
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(ready,350));else setTimeout(ready,350);
+})();
