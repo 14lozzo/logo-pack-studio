@@ -1,3 +1,4 @@
+
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const panel=document.querySelector('.panel');
@@ -21,7 +22,7 @@ panel.insertBefore(assets,exportStage);panel.insertBefore(guide,exportStage);
 const nav=document.querySelector('.steps');nav.classList.add('v15-tabs');nav.innerHTML='';
 ['01 · Brand Setup','02 · Visual Assets','03 · Guidelines','04 · Export Studio'].forEach((name,i)=>{let b=document.createElement('button');b.type='button';b.className='step'+(i===0?' active':'');b.textContent=name;b.onclick=()=>show(i);nav.appendChild(b)});
 function show(n){document.querySelectorAll('.stage').forEach(el=>el.classList.toggle('hidden',Number(el.dataset.stage)!==n));[...nav.children].forEach((el,i)=>el.classList.toggle('active',i===n));if(n===1)updateAssets();if(n===2)drawPage();if(n===3){try{previewGuide()}catch(e){console.warn(e)}}}
-const toolbar=document.createElement('div');toolbar.className='project-toolbar';toolbar.innerHTML=`<strong>◩ V18.3 <small> / Project Manager</small></strong><button id="v15-new" type="button">Novo projeto</button><button id="v15-save" type="button" class="primary">Guardar agora</button><button id="v15-download" type="button">↓ Exportar projeto</button><button id="v15-open" type="button">↑ Abrir projeto</button><input id="v15-import" type="file" accept=".json,application/json" hidden><small id="v15-save-state">A iniciar armazenamento…</small>`;
+const toolbar=document.createElement('div');toolbar.className='project-toolbar';toolbar.innerHTML=`<strong>◩ V18.4 <small> / Project Manager</small></strong><button id="v15-new" type="button">Novo projeto</button><button id="v15-save" type="button" class="primary">Guardar agora</button><button id="v15-download" type="button">↓ Exportar projeto</button><button id="v15-open" type="button">↑ Abrir projeto</button><input id="v15-import" type="file" accept=".json,application/json" hidden><small id="v15-save-state">A iniciar armazenamento…</small>`;
 document.querySelector('main').before(toolbar);
 const fields=['brand','tagline','accent','extra','extraLogo','extraBg','headline','description','project','resolution'];
 const uploadIds=['logo','symbol','photos','brandFont','graphics'];
