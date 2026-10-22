@@ -492,3 +492,58 @@ if(typeof previewGuide==='function')previewGuide().catch(console.warn);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,1400));else setTimeout(install,1400);
 })();
+
+
+/* V18.3 — single controls and a local, reusable mockup library. */
+(function(){
+'use strict';
+function init(){
+ if(document.getElementById('v183-library'))return;
+ const q=id=>document.getElementById(id),setup=document.querySelector('.stage[data-stage="0"]'),assets=document.querySelector('.stage[data-stage="1"]');
+ if(!setup||!assets||!q('v18-mockups'))return;
+ const css=document.createElement('style');css.textContent=`
+ #v183-library{background:#1b1c20;color:#eae8e5;border:1px solid #35353a;border-radius:14px;padding:18px;margin:18px 0}
+ #v183-library h3{margin:0 0 8px}#v183-library p{font-size:12px;color:#aaa9ad}
+ .v183-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+ .v183-grid label{font-size:12px;display:flex;flex-direction:column;gap:7px}
+ .v183-grid input,.v183-grid select{width:100%;box-sizing:border-box;padding:9px;background:#111215;color:#fff;border:1px solid #48484f;border-radius:7px}
+ .v183-actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.v183-actions button{padding:11px 14px;border-radius:8px;border:1px solid #777;background:#e8e3d9;color:#181719;cursor:pointer}
+ #v183-preview{width:100%;height:auto;display:block;background:#ddd;border-radius:9px;margin:14px 0;max-height:650px;object-fit:contain}
+ #v183-library .v183-note{font-size:11px;color:#a9a5a5}
+ `;document.head.appendChild(css);
+ // One visible palette editor: keep the legacy fields as internal data sources.
+ const oldColors=setup.querySelector('.v15-card');if(oldColors&&oldColors.querySelector('#accent'))oldColors.style.display='none';
+ const palette=q('color-palette-studio');if(palette)setup.appendChild(palette);
+ // The H1/H2/H3 editor is the visible typography editor. Legacy controls remain operational.
+ const typ=q('v16-typography');if(typ){const levels=q('v18-type-levels');if(levels){const heading=typ.querySelector('h3');if(heading)heading.textContent='Typography Studio · H1 / H2 / H3';[...typ.children].forEach(child=>{if(child.contains(levels))return;if(child===heading)return;child.style.display='none'});}}
+ // Hide the older 2D mockup UI; do not remove its code or existing exports.
+ q('v18-mockups').style.display='none';
+ const section=document.createElement('section');section.id='v183-library';section.innerHTML=`<h3>Mockup Library · V18.3</h3><p>Escolhe uma aplicação, carrega uma fotografia específica para esse formato e aplica o logótipo. As imagens são processadas localmente no navegador.</p>
+ <div class="v183-grid"><label>Categoria<select id="v183-kind"><option value="card">Cartão de visita</option><option value="post">Instagram · Post</option><option value="story">Instagram · Story</option><option value="reel">Instagram · Reel cover</option><option value="outdoor">Outdoor</option><option value="signage">Sinalética</option><option value="packaging">Packaging</option></select></label>
+ <label>Fotografia do mockup selecionado<input id="v183-photo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+ <label>Logótipo a aplicar<select id="v183-logo"><option value="original">Original</option><option value="dark">Versão para fundo escuro</option><option value="symbol">Símbolo / Monograma</option></select></label>
+ <label>Opacidade do fundo escuro<input id="v183-shade" type="range" min="0" max="80" value="25"></label></div>
+ <canvas id="v183-preview" width="1080" height="1080"></canvas><div class="v183-actions"><button id="v183-png" type="button">Exportar PNG</button><button id="v183-zip" type="button">Exportar biblioteca ZIP</button><button id="v183-clear" type="button">Limpar fotografia deste formato</button></div>
+ <p class="v183-note">Mockups de composição 2D sobre fotografias escolhidas por ti. Não há deteção automática de superfícies, perspetiva 3D ou renders fotorrealistas.</p><p id="v183-status" aria-live="polite"></p>`;
+ assets.appendChild(section);
+ const kinds={card:[1400,900],post:[1080,1080],story:[1080,1920],reel:[1080,1920],outdoor:[1800,900],signage:[1600,1000],packaging:[1200,1200]};
+ const pictures={};let busy=false;
+ const fileOf=()=>{const v=q('v183-logo').value;return v==='symbol'?(q('symbol').files?.[0]||q('logo').files?.[0]):v==='dark'?(q('v18-dark-file')?.files?.[0]||q('logo').files?.[0]):q('logo').files?.[0]};
+ async function img(file){if(!file)return null;const url=URL.createObjectURL(file);try{const image=new Image();image.src=url;await image.decode();return image}finally{URL.revokeObjectURL(url)}}
+ async function compose(kind){const [w,h]=kinds[kind],canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const x=canvas.getContext('2d'),a=q('accent').value,s=q('second').value;x.fillStyle=s;x.fillRect(0,0,w,h);
+ const bg=await img(pictures[kind]);if(bg){const k=Math.max(w/bg.width,h/bg.height);x.drawImage(bg,(w-bg.width*k)/2,(h-bg.height*k)/2,bg.width*k,bg.height*k)}else{ x.fillStyle=a;x.fillRect(w*.055,h*.065,w*.89,h*.87);x.fillStyle=s;x.fillRect(w*.075,h*.085,w*.85,h*.83);}
+ x.fillStyle=`rgba(0,0,0,${Number(q('v183-shade').value)/100})`;x.fillRect(0,0,w,h);
+ const logo=await img(fileOf());if(logo){const maxW=w*(kind==='outdoor'?.53:.64),maxH=h*(kind==='story'||kind==='reel'?.23:.33),k=Math.min(maxW/logo.width,maxH/logo.height),lw=logo.width*k,lh=logo.height*k;x.drawImage(logo,(w-lw)/2,(h-lh)/2,lw,lh)}else{x.fillStyle='#fff';x.font=`bold ${Math.round(w*.06)}px Georgia`;x.textAlign='center';x.fillText(q('brand').value||'BRAND',w/2,h/2,w*.75)}
+ return canvas;}
+ async function update(){try{const kind=q('v183-kind').value,c=await compose(kind),out=q('v183-preview');out.width=c.width;out.height=c.height;out.getContext('2d').drawImage(c,0,0);q('v183-photo').value='';q('v183-status').textContent=(pictures[kind]?'Fotografia: '+pictures[kind].name:'Sem fotografia: composição com cores da marca')+' · '+c.width+' × '+c.height;}catch(e){q('v183-status').textContent='Erro: '+e.message}}
+ q('v183-photo').onchange=async e=>{const f=e.target.files?.[0];if(f){if(!/^image\/(png|jpeg|webp)$/.test(f.type)){q('v183-status').textContent='Formato inválido.';return}pictures[q('v183-kind').value]=f}await update()};
+ q('v183-kind').onchange=update;q('v183-logo').onchange=update;q('v183-shade').oninput=update;
+ q('v183-clear').onclick=()=>{delete pictures[q('v183-kind').value];update()};
+ q('v183-png').onclick=async()=>{try{const k=q('v183-kind').value,c=await compose(k);save(await blobCanvas(c),(slug()||'brand')+'-'+k+'-mockup.png')}catch(e){q('v183-status').textContent=e.message}};
+ q('v183-zip').onclick=async()=>{if(busy)return;busy=true;q('v183-zip').disabled=true;try{const entries=[],root=(slug()||'brand')+'/13_Mockup_Library/';for(const k of Object.keys(kinds)){q('v183-status').textContent='A gerar '+k+'…';entries.push([root+k+'.png',await bytes(await blobCanvas(await compose(k)))]);if(pictures[k])entries.push([root+'photos/'+k+'-'+pictures[k].name,await bytes(pictures[k])])}save(zip(entries),(slug()||'brand')+'-mockup-library.zip');q('v183-status').textContent='Biblioteca exportada: '+entries.length+' ficheiros.'}catch(e){q('v183-status').textContent='Erro: '+e.message}finally{busy=false;q('v183-zip').disabled=false}};
+ // Add the same generated mockups to the existing complete brand-pack ZIP.
+ q('logo')?.addEventListener('change',update);q('symbol')?.addEventListener('change',update);q('v18-dark-file')?.addEventListener('change',update);q('accent')?.addEventListener('input',update);q('second')?.addEventListener('input',update);
+ q('v15-new')?.addEventListener('click',()=>{Object.keys(pictures).forEach(k=>delete pictures[k]);q('v183-shade').value=25;q('v183-kind').value='card';update()});update();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1900));else setTimeout(init,1900);
+})();
