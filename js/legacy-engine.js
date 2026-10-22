@@ -547,3 +547,76 @@ function init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1900));else setTimeout(init,1900);
 })();
+
+
+/* V18.4: consolidated pattern controls, responsive workspace and live previews.
+   Non-destructive: original exports and source controls remain available. */
+(function(){'use strict';
+const q=id=>document.getElementById(id);
+function init(){
+ if(q('v184-style'))return;
+ const css=document.createElement('style');css.id='v184-style';css.textContent=`
+ /* Fluid desktop workspace; compact navigation on small screens. */
+ @media(min-width:1050px){
+  body main{width:calc(100% - 64px)!important;max-width:1920px!important;margin-left:auto!important;margin-right:auto!important}
+  body main>.layout,body main>.workspace,body main>.app-layout{width:100%!important;max-width:none!important}
+  body main .panel{min-width:330px;max-width:none}
+  body main .preview,body main .output,body main .right-panel{min-width:0;max-width:none}
+  .project-toolbar{width:calc(100% - 64px)!important;max-width:1920px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}
+ }
+ @media(min-width:1500px){body main{width:calc(100% - 96px)!important}.project-toolbar{width:calc(100% - 96px)!important}}
+ #v184-pattern-mode{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}
+ #v184-pattern-mode button{padding:10px 12px;border:1px solid #555;border-radius:8px;background:transparent;color:inherit;cursor:pointer}
+ #v184-pattern-mode button[aria-pressed=true]{background:#e9e1d5;color:#181818;border-color:#e9e1d5}
+ #v16-pattern .v18-panel{margin-top:0!important;padding-top:0!important;border:0!important;background:transparent!important}
+ #v16-pattern .v18-panel>h3,#v16-pattern .v18-panel>p{display:none!important}
+ #v184-pattern-note{font-size:12px;opacity:.8;margin-bottom:12px}
+ #v184-pattern-import-preview{width:100%;height:auto;max-height:280px;object-fit:contain;border-radius:8px}
+ #v184-pattern-generated,#v184-pattern-imported{min-width:0}
+ #v16-typography{width:100%;box-sizing:border-box}
+ .v15-page-preview canvas{max-width:100%;height:auto}
+ `;document.head.appendChild(css);
+ // Hide redundant brand font field while preserving its input and the legacy PDF hooks.
+ const font=q('brandFont');if(font){font.style.display='none';const label=font.previousElementSibling;if(label&&label.tagName==='LABEL')label.style.display='none';}
+ const typ=q('v16-typography');if(typ){const levels=q('v18-type-levels');if(levels){const heading=typ.querySelector('h3');if(heading)heading.textContent='Typography Studio · H1 / H2 / H3';[...typ.children].forEach(child=>{if(child===heading||child.contains(levels))return;child.style.display='none'});}}
+ // Merge V16 generator and V18 library into one mode-switching Pattern Studio.
+ const studio=q('v16-pattern'),library=q('v18-pattern-mode')?.closest('.v18-panel');
+ if(studio&&library){
+  const heading=studio.querySelector('h3');if(heading)heading.textContent='Pattern Studio';
+  const intro=studio.querySelector('p');if(intro)intro.textContent='Gera um padrão a partir do símbolo original ou importa um pattern pronto.';
+  const mode=document.createElement('div');mode.id='v184-pattern-mode';mode.innerHTML='<button type="button" data-mode="generate" aria-pressed="true">Gerar com símbolo</button><button type="button" data-mode="import" aria-pressed="false">Importar pattern</button>';
+  intro?.after(mode);
+  const generated=document.createElement('div');generated.id='v184-pattern-generated';
+  // Move controls, canvas, status and exports without losing their listeners.
+  const children=[...studio.children].filter(e=>e!==heading&&e!==intro&&e!==mode&&e!==library);
+  for(const el of children)generated.appendChild(el);
+  studio.appendChild(generated);
+  const imported=document.createElement('div');imported.id='v184-pattern-imported';
+  imported.appendChild(library);studio.appendChild(imported);
+  const select=q('v18-pattern-mode');
+  if(select){select.value='import';const wrap=select.closest('label');if(wrap)wrap.style.display='none';}
+  const preview=q('v18-pattern-preview');if(preview){preview.id='v18-pattern-preview';preview.style.width='100%';preview.style.height='auto';}
+  const buttons=[...mode.querySelectorAll('button')];
+  function show(which){generated.hidden=which!=='generate';imported.hidden=which!=='import';buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===which)));
+   if(select){select.value=which==='generate'?'mark':'import';select.dispatchEvent(new Event('change',{bubbles:true}));}
+   window.__lpsPatternMode=which;
+  }
+  buttons.forEach(b=>b.addEventListener('click',()=>show(b.dataset.mode)));
+  show('generate');
+  const exportActions=generated.querySelector('.v16-actions');
+  if(exportActions){const png=document.createElement('button');png.type='button';png.textContent='Exportar pattern importado PNG';png.onclick=()=>{const canvas=q('v18-pattern-preview');if(!canvas)return;canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=((q('brand')?.value||'brand').replace(/[^a-z0-9-]+/gi,'-'))+'-pattern-importado.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000)},'image/png')};imported.appendChild(png);}
+ }
+ // Brand Board and guidelines should refresh when inputs/assets change, not just on explicit click.
+ let pending=0;const refresh=()=>{clearTimeout(pending);pending=setTimeout(()=>{
+  try{if(typeof render==='function')render()}catch(e){console.warn('Brand Board refresh',e)}
+  try{const active=q('v15-page-canvas')?.closest('.stage');if(active&&!active.classList.contains('hidden'))q('v15-refresh')?.click()}catch(e){console.warn(e)}
+ },180)};
+ document.addEventListener('input',e=>{if(e.target?.closest?.('main')||e.target?.id?.startsWith('v18-')||e.target?.id?.startsWith('v16-'))refresh()},true);
+ document.addEventListener('change',e=>{if(e.target?.matches?.('input[type=file],select')||e.target?.closest?.('#v16-pattern,#v16-typography,#v183-library'))setTimeout(refresh,350)},true);
+ // Ensure new projects update the header and the board.
+ q('v15-new')?.addEventListener('click',refresh);
+ const board=q('board')||document.querySelector('canvas#brand-board,canvas.brand-board');
+ if(board&&typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(()=>{board.style.maxWidth='100%';board.style.height='auto'});observer.observe(board.parentElement||board)}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1850));else setTimeout(init,1850);
+})();
