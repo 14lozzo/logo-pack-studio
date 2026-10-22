@@ -364,3 +364,88 @@ const init=()=>{
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,700));else setTimeout(init,700);
 })();
+
+
+/* V18 — ROGUE dashboard enhancement, based on supplied v1.3 reference. */
+(function(){
+ 'use strict';
+ function init(){
+  if(document.getElementById('v18-dark-logo'))return;
+  const setup=document.querySelector('.stage[data-stage="0"]'),assets=document.querySelector('.stage[data-stage="1"]');
+  if(!setup||!assets)return;
+  const style=document.createElement('style');
+  style.textContent=`
+  :root{--v18-bg:#111215;--v18-panel:#1b1c20;--v18-border:#35353a;--v18-fg:#eae8e5;--v18-muted:#aaa9ad}
+  body{background:var(--v18-bg)!important;color:var(--v18-fg)!important}
+  header,header *,main,main *{box-sizing:border-box}
+  .stage,.v15-card,.v16-studio,#color-palette-studio,#v17-builder,.v18-panel{background:var(--v18-panel)!important;color:var(--v18-fg)!important;border:1px solid var(--v18-border)!important;border-radius:14px!important}
+  .stage{padding:18px!important;min-width:0}
+  .stage h2,.stage h3,.v16-studio h3{color:var(--v18-fg)!important}
+  .stage p,.stage small,.stage label,.v16-studio p,#color-palette-studio p{color:var(--v18-muted)!important}
+  .stage input:not([type=range]):not([type=checkbox]):not([type=file]),.stage select,.stage textarea,#color-palette-studio input[type=text],#color-palette-studio select{background:#111215!important;color:#f4f1ef!important;border:1px solid #48484f!important;border-radius:8px!important;max-width:100%}
+  .stage input[type=file]{max-width:100%;color:#d6d1d0}
+  .v18-panel{padding:17px;margin:16px 0}
+  .v18-panel h3{font-size:17px;margin:0 0 8px}
+  .v18-panel p{font-size:12px;line-height:1.5}
+  .v18-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .v18-grid label{display:block;font-size:12px}
+  .v18-grid input,.v18-grid select{width:100%;margin-top:6px;padding:9px}
+  .v18-preview{border:1px solid #49464a;border-radius:12px;padding:15px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:13px}
+  .v18-tile{border-radius:8px;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;overflow:hidden;padding:10px}
+  .v18-tile img{max-width:90%;max-height:75px;object-fit:contain}
+  .v18-tile span{font:10px Arial;letter-spacing:1px}
+  .v18-btn{background:#e8e3d9!important;color:#181719!important;border:0!important;border-radius:9px!important;padding:12px 16px!important;cursor:pointer;font-weight:700}
+  .v18-btn:disabled{opacity:.45;cursor:wait}
+  #v18-pattern-preview{width:100%;max-height:270px;object-fit:contain;border-radius:9px;margin-top:10px}
+  .v18-status{font-size:12px;color:#b8d4bd;margin-top:8px;white-space:pre-wrap}
+  @media(max-width:640px){.v18-grid,.v18-preview{grid-template-columns:1fr}}
+  `;
+  document.head.appendChild(style);
+  const q=id=>document.getElementById(id);
+  const dark=document.createElement('section');dark.className='v18-panel';dark.id='v18-dark-logo';
+  dark.innerHTML=`<h3>Versão para fundo escuro</h3><p>Carrega uma versão alternativa do logótipo. A versão original permanece intacta.</p><input type="file" id="v18-dark-file" accept=".svg,.png,.webp,.jpg,.jpeg"><div class="v18-preview"><div class="v18-tile" style="background:#f6f5f1;color:#111"><img id="v18-light-image" hidden><span>LIGHT</span></div><div class="v18-tile" style="background:#161719;color:white"><img id="v18-dark-image" hidden><span>DARK</span></div><div class="v18-tile" id="v18-brand-tile" style="background:#CE1738;color:white"><img id="v18-brand-image" hidden><span>BRAND</span></div></div><div class="v18-status" id="v18-dark-status"></div>`;
+  const palette=q('color-palette-studio');if(palette)setup.insertBefore(dark,palette);else setup.appendChild(dark);
+  let darkFile=null,darkURL=null,patternFile=null;
+  function preview(){const f=q('logo')?.files?.[0];const primary=f?URL.createObjectURL(f):null;
+    if(preview._primary)URL.revokeObjectURL(preview._primary);preview._primary=primary;
+    for(const [id,url] of [['v18-light-image',primary],['v18-dark-image',darkURL||primary],['v18-brand-image',primary]]){const im=q(id);im.hidden=!url;if(url)im.src=url;}
+    q('v18-brand-tile').style.background=q('accent')?.value||'#CE1738';
+  }
+  q('logo')?.addEventListener('change',preview);q('accent')?.addEventListener('input',preview);
+  q('v18-dark-file').addEventListener('change',e=>{darkFile=e.target.files?.[0]||null;if(darkURL)URL.revokeObjectURL(darkURL);darkURL=darkFile?URL.createObjectURL(darkFile):null;preview();q('v18-dark-status').textContent=darkFile?'Versão alternativa carregada: '+darkFile.name:''});preview();
+  const ty=q('v16-typography');if(ty){
+    const block=document.createElement('div');block.className='v18-panel';block.style.margin='12px 0 0';block.innerHTML=`<h3>Hierarquia tipográfica H1 / H2 / H3</h3><p>Fontes reais, tamanho em pontos e estilo por nível. A pré-visualização é local.</p><div id="v18-type-levels"></div>`;
+    ty.appendChild(block);
+    const defaults=[['h1','H1 · Título principal',72],['h2','H2 · Subtítulo',30],['h3','H3 · Corpo de texto',24]];
+    const faceData={};window.__v18Fonts=faceData;
+    for(const [id,label,sz] of defaults){const line=document.createElement('div');line.style.cssText='padding:12px 0;border-bottom:1px solid #454248';line.innerHTML=`<strong style="font-size:12px">${label}</strong><div class="v18-grid"><label>Carregar fonte<input id="v18-font-${id}" type="file" accept=".ttf,.otf,.woff,.woff2"></label><label>Família / nome<input id="v18-name-${id}" type="text" placeholder="Nome da fonte"></label><label>Tamanho (pt)<input id="v18-size-${id}" type="number" min="8" max="120" value="${sz}"></label><label>Estilo<select id="v18-style-${id}"><option>Regular</option><option>Bold</option><option>Italic</option></select></label></div><div id="v18-preview-${id}" style="margin:10px 0;overflow-wrap:anywhere">${id==='h3'?'Texto de exemplo para leitura.':id==='h2'?'Uma identidade com personalidade.':'BRAND IDENTITY'}</div>`;q('v18-type-levels').appendChild(line);
+      const update=()=>{const p=q('v18-preview-'+id);p.style.fontFamily=faceData[id]?.family||'Georgia,serif';p.style.fontSize=Math.min(60,Number(q('v18-size-'+id).value)||sz)+'px';p.style.fontStyle=q('v18-style-'+id).value==='Italic'?'italic':'normal';p.style.fontWeight=q('v18-style-'+id).value==='Bold'?'bold':'normal'};
+      for(const attr of ['size','style'])q('v18-'+attr+'-'+id).addEventListener('input',update);
+      q('v18-font-'+id).addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;if(!/\.(otf|ttf|woff2?)$/i.test(f.name)||f.size>15e6){q('v18-dark-status').textContent='Fonte inválida ou superior a 15 MB';return}const url=URL.createObjectURL(f);try{const family='V18_'+id;const face=new FontFace(family,`url("${url}")`);await face.load();document.fonts.add(face);if(faceData[id]?.url)URL.revokeObjectURL(faceData[id].url);faceData[id]={file:f,family,url};if(!q('v18-name-'+id).value)q('v18-name-'+id).value=f.name.replace(/\.[^.]+$/,'');update();}catch(err){URL.revokeObjectURL(url);q('v18-dark-status').textContent='Falha ao carregar fonte: '+err.message}});update();
+    }
+  }
+  const pat=q('v16-pattern');if(pat){const el=document.createElement('section');el.className='v18-panel';el.innerHTML=`<h3>Biblioteca de patterns</h3><p>Escolhe um motivo geométrico ou importa um padrão próprio. Os ficheiros importados são preservados.</p><div class="v18-grid"><label>Motivo<select id="v18-pattern-mode"><option value="mark">Monograma repetido (V16)</option><option value="dots">Pontos</option><option value="lines">Linhas diagonais</option><option value="grid">Grelha</option><option value="import">Pattern importado</option></select></label><label>Importar SVG ou imagem<input id="v18-pattern-file" type="file" accept=".svg,.png,.jpg,.jpeg,.webp"></label></div><canvas id="v18-pattern-preview" width="900" height="450"></canvas><div class="v18-status" id="v18-pattern-status"></div>`;pat.appendChild(el);
+    let patImg=null,patURL=null;
+    async function drawPattern(){const c=q('v18-pattern-preview'),x=c.getContext('2d'),w=c.width,h=c.height,mode=q('v18-pattern-mode').value,fg=q('accent').value,bg=q('second').value;x.clearRect(0,0,w,h);x.fillStyle=bg;x.fillRect(0,0,w,h);x.strokeStyle=fg;x.fillStyle=fg;x.lineWidth=3;
+      if(mode==='mark'){const old=q('v16-pattern-canvas');if(old)x.drawImage(old,0,0,w,h);return}
+      if(mode==='import'){if(patImg){const ratio=Math.min(w/patImg.width,h/patImg.height);x.drawImage(patImg,(w-patImg.width*ratio)/2,(h-patImg.height*ratio)/2,patImg.width*ratio,patImg.height*ratio)}return}
+      x.globalAlpha=.35;
+      if(mode==='dots')for(let y=35;y<h;y+=75)for(let xx=35;xx<w;xx+=75){x.beginPath();x.arc(xx,y,7,0,Math.PI*2);x.fill()}
+      if(mode==='grid'){for(let xx=0;xx<w;xx+=80){x.beginPath();x.moveTo(xx,0);x.lineTo(xx,h);x.stroke()}for(let y=0;y<h;y+=80){x.beginPath();x.moveTo(0,y);x.lineTo(w,y);x.stroke()}}
+      if(mode==='lines')for(let xx=-h;xx<w+h;xx+=85){x.beginPath();x.moveTo(xx,0);x.lineTo(xx+h,h);x.stroke()}x.globalAlpha=1;
+    }
+    q('v18-pattern-mode').addEventListener('change',drawPattern);for(const id of ['accent','second','v16-gap','v16-scale','v16-rotate'])q(id)?.addEventListener('input',()=>setTimeout(drawPattern,70));
+    q('v18-pattern-file').addEventListener('change',async e=>{patternFile=e.target.files?.[0]||null;if(patURL)URL.revokeObjectURL(patURL);patImg=null;if(!patternFile)return drawPattern();patURL=URL.createObjectURL(patternFile);const im=new Image();im.onload=()=>{patImg=im;q('v18-pattern-mode').value='import';drawPattern()};im.onerror=()=>q('v18-pattern-status').textContent='Não foi possível ler o pattern.';im.src=patURL});setTimeout(drawPattern,700);
+  }
+  const mock=document.createElement('section');mock.className='v18-panel';mock.id='v18-mockups';mock.innerHTML=`<h3>Aplicações da marca — Mockup Studio</h3><p>Gera composições 2D para cartão de visita, post, story, reel e outdoor. Não são renders fotográficos.</p><div class="v18-grid"><label>Fotografia opcional<input type="file" id="v18-photo" accept="image/*"></label><label>Formato<select id="v18-mockup-kind"><option value="business">Cartão de visita</option><option value="post">Instagram post · 1080×1080</option><option value="story">Instagram story · 1080×1920</option><option value="reel">Reel cover · 1080×1920</option><option value="outdoor">Outdoor · 1800×900</option></select></label></div><canvas id="v18-mockup-preview" width="900" height="580" style="display:block;width:100%;height:auto;margin-top:14px;border-radius:9px;background:#eee"></canvas><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px"><button class="v18-btn" id="v18-mockup-refresh" type="button">Atualizar preview</button><button class="v18-btn" id="v18-mockup-export" type="button">Exportar aplicações ZIP</button></div><div class="v18-status" id="v18-mockup-status"></div>`;
+  assets.appendChild(mock);
+  async function loadImage(file){if(!file)return null;const u=URL.createObjectURL(file);try{const im=new Image();im.src=u;await im.decode();return im}finally{URL.revokeObjectURL(u)}}
+  async function composition(kind){const dims={business:[1400,900],post:[1080,1080],story:[1080,1920],reel:[1080,1920],outdoor:[1800,900]},[w,h]=dims[kind],c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d'),accent=q('accent').value,second=q('second').value,brand=q('brand').value||'BRAND';x.fillStyle=second;x.fillRect(0,0,w,h);const photo=await loadImage(q('v18-photo').files?.[0]);if(kind==='business'){x.fillStyle=accent;x.fillRect(55,55,w-110,h-110)}else{x.fillStyle=accent;x.fillRect(0,0,w,h);if(photo){const r=Math.max(w/photo.width,h/photo.height);x.drawImage(photo,(w-photo.width*r)/2,(h-photo.height*r)/2,photo.width*r,photo.height*r);x.fillStyle='#0008';x.fillRect(0,0,w,h)}}
+    const logoFile=(kind==='business'&&darkFile)?darkFile:q('logo').files?.[0],im=await loadImage(logoFile);if(im){const box={x:w*.17,y:h*.28,w:w*.66,h:h*.35},r=Math.min(box.w/im.width,box.h/im.height);x.drawImage(im,box.x+(box.w-im.width*r)/2,box.y+(box.h-im.height*r)/2,im.width*r,im.height*r)}else{x.fillStyle='white';x.font='bold 70px Georgia';x.fillText(brand,90,h*.45)}x.fillStyle='white';x.font=`bold ${kind==='outdoor'?54:35}px Arial`;x.fillText(brand.toUpperCase().slice(0,28),75,h-115);x.font='22px Arial';x.fillText(({business:'BUSINESS CARD',post:'BRAND POST',story:'STORY TEMPLATE',reel:'REEL COVER',outdoor:'OUTDOOR CONCEPT'})[kind],75,h-65);return c}
+  async function updateMock(){try{const c=await composition(q('v18-mockup-kind').value),out=q('v18-mockup-preview');out.width=c.width;out.height=c.height;out.getContext('2d').drawImage(c,0,0);q('v18-mockup-status').textContent='Pré-visualização pronta.'}catch(err){q('v18-mockup-status').textContent='Erro: '+err.message}}
+  q('v18-mockup-refresh').onclick=updateMock;q('v18-mockup-kind').onchange=updateMock;q('v18-photo').onchange=updateMock;
+  q('v18-mockup-export').onclick=async()=>{const btn=q('v18-mockup-export');btn.disabled=true;try{const items=[],prefix=(q('brand').value||'brand').replace(/[^a-z0-9-]+/gi,'-')+'/';for(const kind of ['business','post','story','reel','outdoor']){q('v18-mockup-status').textContent='A gerar '+kind+'…';const c=await composition(kind);items.push([prefix+'07_Mockups/'+kind+'.png',await bytes(await blobCanvas(c))])}if(darkFile)items.push([prefix+'04_Original_Assets/dark-version-'+darkFile.name,await bytes(darkFile)]);if(patternFile)items.push([prefix+'06_Patterns/imported-'+patternFile.name,await bytes(patternFile)]);for(const [level,entry] of Object.entries(window.__v18Fonts||{})){items.push([prefix+'08_Typography/'+level+'-'+entry.file.name,await bytes(entry.file)])}const metadata={brand:q('brand').value,typography:Object.fromEntries(['h1','h2','h3'].map(id=>[id,{name:q('v18-name-'+id)?.value,size:q('v18-size-'+id)?.value,style:q('v18-style-'+id)?.value}]))};items.push([prefix+'08_Typography/typography.json',enc.encode(JSON.stringify(metadata,null,2))]);save(zip(items),(q('brand').value||'brand').replace(/[^a-z0-9-]+/gi,'-')+'-v18-applications.zip');q('v18-mockup-status').textContent='ZIP de aplicações exportado: '+items.length+' ficheiros.'}catch(err){q('v18-mockup-status').textContent='Erro: '+err.message}finally{btn.disabled=false}};
+  q('logo')?.addEventListener('change',()=>setTimeout(updateMock,200));q('brand')?.addEventListener('input',()=>setTimeout(updateMock,200));setTimeout(updateMock,400);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1000));else setTimeout(init,1000);
+})();
