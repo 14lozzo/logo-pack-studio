@@ -449,3 +449,46 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1000));else setTimeout(init,1000);
 })();
+/* V18.1 — Brand Guidelines visual and export corrections. */
+(function(){
+'use strict';
+const get=id=>document.getElementById(id);
+const rgbHex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const inkFor=h=>{const [r,g,b]=rgbHex(h).map(v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*r+.7152*g+.0722*b>.42?'#111111':'#FFFFFF'};
+const isNeutral=h=>{const [r,g,b]=rgbHex(h);return Math.max(r,g,b)-Math.min(r,g,b)<30};
+const font=id=>{const v=window.__v18Fonts||{};return v[id]?.family||(id==='h1'?get('v16-display')?.value:id==='h3'?get('v16-body')?.value:null)||brandFontName||'Arial'};
+const weight=id=>get('v18-style-'+id)?.value==='Bold'?'bold':'normal';
+const style=id=>get('v18-style-'+id)?.value==='Italic'?'italic':'';
+const textSize=id=>Math.max(12,Math.min(110,Number(get('v18-size-'+id)?.value)||({h1:72,h2:30,h3:24}[id])));
+function drawText(x,s,px,py,size,color='#111',family='Arial',bold='normal',max=780){x.fillStyle=color;x.font=`${bold} ${size}px "${family}"`;x.textBaseline='alphabetic';const t=String(s);x.fillText(t,px,py,max)}
+function imageFit(x,im,px,py,w,h,pad=0){if(!im)return;const r=Math.min((w-pad*2)/im.width,(h-pad*2)/im.height);x.drawImage(im,px+(w-im.width*r)/2,py+(h-im.height*r)/2,im.width*r,im.height*r)}
+function mark(x,im,px,py,w,h,bg,primary,mode='auto'){x.fillStyle=bg;x.fillRect(px,py,w,h);if(!im)return;const dark=inkFor(bg)==='#FFFFFF';const useMono=mode==='mono'||(mode==='auto'&&(dark||isNeutral(primary)&&inkFor(bg)!=='#111111'));if(!useMono){imageFit(x,im,px,py,w,h,Math.min(w,h)*.10);return}const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(w));cv.height=Math.max(1,Math.round(h));const z=cv.getContext('2d');imageFit(z,im,0,0,w,h,Math.min(w,h)*.10);z.globalCompositeOperation='source-in';z.fillStyle=dark?'#FFFFFF':'#111111';z.fillRect(0,0,w,h);x.drawImage(cv,px,py)}
+function hexName(h){const names={'#FFFFFF':'Branco','#000000':'Preto','#CE1738':'Vermelho RŌGUE','#E9E1D5':'Creme'};return names[h.toUpperCase()]||'Cor personalizada'}
+function codes(h){const [r,g,b]=rgbHex(h),k=1-Math.max(r,g,b)/255;let c=0,m=0,y=0;if(k<1){c=(1-r/255-k)/(1-k);m=(1-g/255-k)/(1-k);y=(1-b/255-k)/(1-k)}return {rgb:`RGB ${r}, ${g}, ${b}`,cmyk:`CMYK ${[c,m,y,k].map(v=>Math.round(v*100)).join(' / ')}`}}
+function mock(x,kind,px,py,w,h,primary,secondary,brand,im){x.save();x.beginPath();x.rect(px,py,w,h);x.clip();x.fillStyle=secondary;x.fillRect(px,py,w,h);if(kind==='card'){x.fillStyle='#ffffff';x.fillRect(px+w*.08,py+h*.12,w*.84,h*.73);mark(x,im,px+w*.16,py+h*.28,w*.68,h*.35,'#FFFFFF',primary);drawText(x,brand.toUpperCase(),px+w*.17,py+h*.73,Math.min(20,w*.045),'#222',font('h3'))}else if(kind==='post'){x.fillStyle=primary;x.fillRect(px+w*.09,py+h*.08,w*.82,h*.84);mark(x,im,px+w*.17,py+h*.29,w*.66,h*.38,primary,primary)}else if(kind==='story'){x.fillStyle=primary;x.fillRect(px+w*.13,py+h*.06,w*.74,h*.88);mark(x,im,px+w*.22,py+h*.34,w*.56,h*.28,primary,primary)}else if(kind==='outdoor'){x.fillStyle='#292929';x.fillRect(px+w*.05,py+h*.20,w*.90,h*.60);mark(x,im,px+w*.15,py+h*.32,w*.70,h*.32,'#292929',primary)}x.restore()}
+function install(){if(window.__v181Installed)return;window.__v181Installed=true;
+const previous=paintPage;
+paintPage=function(index,scale=1){
+const c=previous(index,scale),x=c.getContext('2d');x.save();x.scale(scale,scale);
+const A=get('accent').value.toUpperCase(),S=get('second').value.toUpperCase(),B=get('brand').value||'Marca',im=logo,sy=symbol||logo;
+const bg='#FFFFFF',dark='#171717';
+function wipe(){x.fillStyle=bg;x.fillRect(0,245,900,925)}
+function caption(t,xx,yy,sz=19){drawText(x,t,xx,yy,sz,dark,font('h3'))}
+if(index===0){x.fillStyle=S;x.fillRect(0,90,900,820);mark(x,im,90,180,720,340,S,A);drawText(x,B,90,620,72,inkFor(S),font('h1'),weight('h1'));drawText(x,(get('tagline').value||'IDENTIDADE VISUAL').toUpperCase(),90,704,25,inkFor(S),font('h3'));x.fillStyle='#FFFFFF';x.fillRect(0,911,900,262);drawText(x,'BRAND GUIDELINES',55,1058,32,dark,font('h2'),'bold');drawText(x,'IDENTIDADE VISUAL',55,1100,18,dark,font('h3'))}
+if(index===6){wipe();mark(x,im,55,300,385,345,'#FFFFFF',A,'mono');mark(x,im,460,300,385,345,'#111111',A,'mono');const third=inkFor(S)==='#111111'?S:'#FFFFFF';mark(x,im,55,675,790,330,third,A,third==='#FFFFFF'?'auto':'mono');caption('Preto sobre branco  ·  Branco sobre preto  ·  Original sobre secundária',55,1045,20)}
+if(index===7){x.fillStyle=dark;x.fillRect(55,972,790,105);drawText(x,'Margem de segurança sugerida: 10% da largura do símbolo.',73,1026,20,'#FFFFFF',font('h3'))}
+if(index===8){wipe();[1,.65,.4].forEach((v,j)=>{const w=640*v,h=185,px=55,py=285+j*260;mark(x,im,px,py,w,h,S,A);caption(Math.round(v*100)+'%',px+w+18,py+h/2+8,22)})}
+if(index===10){wipe();const palette=[['PRINCIPAL',A],['SECUNDÁRIA',S],['APOIO 1',get('golden').value.toUpperCase()],['APOIO 2',get('dark').value.toUpperCase()]];palette.forEach(([name,h],j)=>{const yy=282+j*210,co=codes(h);x.fillStyle=h;x.fillRect(55,yy,220,165);drawText(x,name+' · '+hexName(h),310,yy+30,22,dark,font('h2'),'bold');drawText(x,'HEX '+h,310,yy+67,21,dark,font('h3'));drawText(x,co.rgb,310,yy+103,19,dark,font('h3'));drawText(x,co.cmyk,310,yy+138,19,dark,font('h3'))});drawText(x,'CMYK aproximado — validar perfil ICC para impressão.',55,1150,17,dark,font('h3'))}
+if(index===11){wipe();x.fillStyle=S;x.fillRect(55,300,790,365);drawText(x,'Aa Bb Cc',85,535,Math.min(100,textSize('h1')*1.3),inkFor(S),font('h1'),weight('h1'));caption('Fonte de títulos: '+(get('v18-name-h1')?.value||get('v16-display')?.value||'Selecionada'),55,730,21);drawText(x,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',55,805,30,dark,font('h1'));drawText(x,'abcdefghijklmnopqrstuvwxyz 0123456789',55,865,26,dark,font('h1'));caption('Fonte de corpo: '+(get('v18-name-h3')?.value||get('v16-body')?.value||'Selecionada'),55,950,21);drawText(x,'O design comunica com clareza.',55,1010,25,dark,font('h3'))}
+if(index===12){wipe();[['h1','Título principal'],['h2','Cabeçalho e subtítulo'],['h3','Texto de corpo e legendas']].forEach(([id,label],j)=>{const yy=365+j*245;caption(label.toUpperCase(),55,yy-60,17);drawText(x,label,55,yy,Math.min(75,textSize(id)),dark,font(id),weight(id),760)});caption('Famílias, estilos e tamanhos definidos no Typography Studio.',55,1125,18)}
+if(index===13){wipe();const colors=[S,'#FFFFFF',A,S];for(let j=0;j<4;j++){const px=55+j%2*405,py=300+Math.floor(j/2)*380;mark(x,sy,px,py,385,345,colors[j],A,j===2?'mono':'auto');drawText(x,['FORMAS','CONTRASTE','MOTIVOS','ELEMENTOS'][j],px+12,py+328,16,inkFor(colors[j]),'Arial','bold')}}
+if(index===14){wipe();const pat=get('v18-pattern-preview'),v16=get('v16-pattern-canvas');const chosen=get('v18-pattern-mode')?.value;const source=chosen&&chosen!=='mark'?pat:v16||pat;for(let j=0;j<4;j++){const px=55+j%2*405,py=300+Math.floor(j/2)*380;x.save();x.beginPath();x.rect(px,py,385,345);x.clip();x.fillStyle=j%2?S:'#FFFFFF';x.fillRect(px,py,385,345);if(source&&source.width){x.drawImage(source,0,0,source.width,source.height,px,py,385,345)}x.restore()}}
+if(index===15){wipe();mock(x,'outdoor',55,305,790,440,A,S,B,im);mock(x,'post',55,765,385,300,A,S,B,im);mock(x,'card',460,765,385,300,A,S,B,im)}
+if(index===16){wipe();mock(x,'post',55,305,385,525,A,S,B,im);mock(x,'story',460,305,385,525,A,S,B,im);mock(x,'outdoor',55,855,790,210,A,S,B,im)}
+if(index===17){wipe();mock(x,'card',55,305,790,345,A,S,B,im);mock(x,'post',55,680,385,365,A,S,B,im);mock(x,'outdoor',460,680,385,365,A,S,B,im)}
+x.restore();return c};
+const oldZip=zip;zip=function(entries){const root=(slug()||'brand')+'/';const p=get('v18-pattern-preview'),mode=get('v18-pattern-mode')?.value,source=mode&&mode!=='mark'?p:get('v16-pattern-canvas');if(source){try{const data=atob(source.toDataURL('image/png').split(',')[1]),arr=Uint8Array.from(data,ch=>ch.charCodeAt(0));entries.push([root+'12_Patterns/selected-pattern.png',arr])}catch(e){console.warn(e)}}return oldZip(entries)};
+if(typeof previewGuide==='function')previewGuide().catch(console.warn);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,1400));else setTimeout(install,1400);
+})();
